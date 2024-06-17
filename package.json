@@ -30,6 +30,7 @@
     "axios": "^1.6.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "dotenv": "^16.4.5",
     "ethers": "^5",
     "framer-motion": "^10.16.4",
     "hamburger-react": "^2.5.0",

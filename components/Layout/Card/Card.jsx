@@ -159,7 +159,7 @@ const Card = ({ id }) => {
                     {numeral(Number(priceData) / 10 ** 8).format("0,0.000")}
                   </p>
                   <Image
-                    src="/priva_32.webp"
+                    src="/priva-32.png"
                     alt="Priva-Icon"
                     width={30}
                     height={30}
@@ -174,7 +174,7 @@ const Card = ({ id }) => {
                         <button onClick={() => {
                           approveToken()
                         }} className={`${allowancedMarketPlaceAmount >= priceData ? "bg-[#cdcdcd96] border-none cursor-not-allowed text-gray-800" : "hover:bg-white mx-1 hover:text-black text-white hover:font-bold hover:border-transparent transilation delay-75 border-primary"} border-2  rounded-lg px-5 py-1 mt-2`}>
-                          <p className={`${allowancedMarketPlaceAmount >= priceData ? "hover:animate-none " : "animate-pulse"}`}>approve</p>
+                          <p className={`${allowancedMarketPlaceAmount >= priceData ? "hover:animate-none " : "animate-pulse"}`}>Approve</p>
                         </button>
                         <button onClick={() => {
                           buyDomain()

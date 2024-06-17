@@ -176,6 +176,11 @@ export const TransactionProvider = ({ children }) => {
   }, [approveStatus])
 
   const handleChangeDomainName = (e) => {
+    console.log(e.key, e=== 'Enter', e ,"walue");
+    // if (e.key === 'Enter') {
+
+    //   searchDomain()
+    // }
     if (isExistsDomain) setExistDomain(false);
     setDomainName(e);
   };
