@@ -11,6 +11,7 @@ import { usePrivappContractRead, usePrivappContractWrite } from "@/hooks";
 import { privappDomainNFTAddress } from "@/lib";
 import { useAccount, useWaitForTransaction } from "wagmi";
 import { toast } from "react-toastify";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 
 
@@ -18,7 +19,7 @@ import { toast } from "react-toastify";
 
 const CreateDomain = () => {
   const [reMintable, setReMintable] = useState(false)
-
+const  {openConnectModal} = useConnectModal()
   const {
     handleChangeDomainName,
     domainName,
@@ -108,6 +109,7 @@ const CreateDomain = () => {
 
 
   const approveToken = async () => {
+    if(!address) return openConnectModal()
     approveWrite({
       args: [privappDomainNFTAddress, 1*10**6*10**8],
       functionName: "approve", 
@@ -161,9 +163,11 @@ const CreateDomain = () => {
           <div className="flex items-center justify-center gap-x-2 w-full">
             <Input
               placeholder="Domain Name"
+              autoComplete="off"
+              onKeyDown={(e) => e.key === "Enter" ? searchDomain() : null}
               className="w-full md:w-1/2"
               value={domainName == "" ? "" : domainName}
-              onChange={(e) => handleChangeDomainName(e.target.value)}
+              onChange={(e) => handleChangeDomainName(e)}
             />
             <Button>
               <Search

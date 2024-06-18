@@ -18,57 +18,47 @@ import Web3 from "web3";
 export const TransactionProvider = ({ children }) => {
   const [walletAddress, setWalletAddress] = useState("");
   const [domainName, setDomainName] = useState("");
-
+  const [willSearchDomainName, setWillSearchDomainName] = useState("");
   const [privBalance, setPrivBalance] = useState(0);
   const [isExistsDomain, setExistDomain] = useState(false);
   const [mintingCost, setMintingCost] = useState(0);
   const [mintableStatus, setMintableStatus] = useState(false);
   const [approveStatus, setApproveStatus] = useState(false);
   const [allowancedAmount, setAllowancedAmount] = useState(0);
-  const [allowancedMarketPlaceAmount, setAllowancedMarketPlaceAmount] = useState(0)
+  const [allowancedMarketPlaceAmount, setAllowancedMarketPlaceAmount] = useState(0);
   const [selectBGImage, setBgImage] = useState(0);
-  const [allOwnNFT, setAllOwnNFT] = useState([])
+  const [allOwnNFT, setAllOwnNFT] = useState([]);
   const [selectFilter, setFilter] = useState("");
   const [selectMarketFilter, setMarketFilter] = useState("");
-  const [allSaleDetailDomains, setAllSaleDetailDomains] = useState([])
-  const [approvedDomainStatus, setApporvedDomainStatus] = useState({})
-  const [allNftsIdOnSale, setNftsIdOnSale] = useState([])
-
-  const [domainEvents, setDomainEvents] = useState({})
-  const [marketPlaceEvents, setMarketPlaceEvents] = useState({})
-
-  const [totalSoldDomains, setTotalSoldDomains] = useState(0)
-  const [totalMintedDomains, setTotalMintedDomains] = useState(0)
-
-  const [randomSaleDomainIds, setRandomSaleDomainIds] = useState([])
-
-  const [profileImgUrl, setProfileImageUrl] = useState("")
-
+  const [allSaleDetailDomains, setAllSaleDetailDomains] = useState([]);
+  const [approvedDomainStatus, setApporvedDomainStatus] = useState({});
+  const [allNftsIdOnSale, setNftsIdOnSale] = useState([]);
+  const [domainEvents, setDomainEvents] = useState({});
+  const [marketPlaceEvents, setMarketPlaceEvents] = useState({});
+  const [totalSoldDomains, setTotalSoldDomains] = useState(0);
+  const [totalMintedDomains, setTotalMintedDomains] = useState(0);
+  const [randomSaleDomainIds, setRandomSaleDomainIds] = useState([]);
+  const [profileImgUrl, setProfileImageUrl] = useState("");
   const [isLoading, setLoading] = useState(false);
+  const [animationEnd, setAnimationEnd] = useState(false);
 
-
-  const [animationEnd, setAnimationEnd] = useState(false)
   useEffect(() => {
     setTimeout(() => {
-      setAnimationEnd(true)
-    }, 200)
-  })
+      setAnimationEnd(true);
+    }, 200);
+  }, []);
 
   const [selectAuction, setAuction] = useState({
     select: "create",
   });
 
-
-  const [likesData, setLikesData] = useState([])
-
-
+  const [likesData, setLikesData] = useState([]);
 
   const { address, isConnecting, isDisconnected, isConnected } = useAccount();
 
   useEffect(() => {
-    getAllTransactions()
-  }, [])
-
+    getAllTransactions();
+  }, []);
 
   const privTokenContract = {
     address: privappTokenAddress,
@@ -86,11 +76,6 @@ export const TransactionProvider = ({ children }) => {
   };
 
   const contractConfigurations = [
-    {
-      ...privDomainContract,
-      functionName: "domainExists",
-      args: [domainName],
-    },
     {
       ...privTokenContract,
       functionName: "allowance",
@@ -119,14 +104,16 @@ export const TransactionProvider = ({ children }) => {
       ...privMarketPlaceContract,
       functionName: "getAllSaleItem",
     },
-
   ];
 
+  const { data: searchDomainData, isError: searchDomainError } = usePrivappContractRead("domain", {
+    functionName: "domainExists",
+    args: [domainName],
+  });
 
   const { data: mutlipleContractData, isError: mutlipleContractError } = usePrivappContactReads(
     contractConfigurations
   );
-
 
   useEffect(() => {
     const fetchLikes = async () => {
@@ -142,66 +129,61 @@ export const TransactionProvider = ({ children }) => {
     fetchLikes();
   }, []);
 
-
   useEffect(() => {
-    if (!mutlipleContractData) return
+    if (!mutlipleContractData) return;
 
     getAllTransactions();
-    setAllowancedAmount(Number(mutlipleContractData[1]?.result));
-    setPrivBalance(Number(mutlipleContractData[2].result));
-    setMintingCost(Number(mutlipleContractData[3].result));
+    setAllowancedAmount(Number(mutlipleContractData[0]?.result));
+    setPrivBalance(Number(mutlipleContractData[1].result));
+    setMintingCost(Number(mutlipleContractData[2].result));
 
-    setAllOwnNFT(mutlipleContractData[4]?.result);
-    setAllowancedMarketPlaceAmount(mutlipleContractData[5]?.result?.toString())
-    setAllSaleDetailDomains(mutlipleContractData[6].result)
-    Number(mutlipleContractData[1].result) > Number(mutlipleContractData[3].result)
+    setAllOwnNFT(mutlipleContractData[3]?.result);
+    setAllowancedMarketPlaceAmount(mutlipleContractData[4]?.result?.toString());
+    setAllSaleDetailDomains(mutlipleContractData[5].result);
+    Number(mutlipleContractData[0].result) > Number(mutlipleContractData[2].result)
       ? setApproveStatus(true)
       : setApproveStatus(false);
 
   }, [mutlipleContractData]);
 
   useEffect(() => {
-    getAllData()
-  }, [allOwnNFT])
+    getAllData();
+  }, [allOwnNFT]);
 
   useEffect(() => {
     setTimeout(() => {
-      setLoading(true)
+      setLoading(true);
     }, 2000);
   }, [mutlipleContractData]);
 
-
   useEffect(() => {
-    setMintableStatus(!approveStatus)
-  }, [approveStatus])
+    setMintableStatus(!approveStatus);
+  }, [approveStatus]);
 
+ 
   const handleChangeDomainName = (e) => {
-    console.log(e.key, e=== 'Enter', e ,"walue");
-    // if (e.key === 'Enter') {
-
-    //   searchDomain()
-    // }
+    const sanitizedValue = e.target.value.replace(/[^a-zA-Z0-9-]/g, '');
     if (isExistsDomain) setExistDomain(false);
-    setDomainName(e);
+    setDomainName(sanitizedValue);
   };
 
   const getAllData = async () => {
-    if (!allOwnNFT) return
-    const web3 = new Web3("https://sepolia.infura.io/v3/" + process.env.NEXT_PUBLIC_INFURA_API_KEY)
-    const domainContract = new web3.eth.Contract(privappDomainNFTAbi, privappDomainNFTAddress)
+    if (!allOwnNFT) return;
+    const web3 = new Web3("https://sepolia.infura.io/v3/" + process.env.NEXT_PUBLIC_INFURA_API_KEY);
+    const domainContract = new web3.eth.Contract(privappDomainNFTAbi, privappDomainNFTAddress);
     for (const item of allOwnNFT) {
-      var approvedTokenStatus = await domainContract.methods.checkAllowanceStatus(privappMarketPlaceAddress, item.tokenId.toString()).call()
+      var approvedTokenStatus = await domainContract.methods.checkAllowanceStatus(privappMarketPlaceAddress, item.tokenId.toString()).call();
       setApporvedDomainStatus((prevStatus) => ({
         ...prevStatus,
         [item.tokenId]: approvedTokenStatus
-      }))
+      }));
     }
   };
 
   const getAllTransactions = async () => {
-    const web3 = new Web3("https://sepolia.infura.io/v3/" + process.env.NEXT_PUBLIC_INFURA_API_KEY)
-    const domainContract = new web3.eth.Contract(privappDomainNFTAbi, privappDomainNFTAddress)
-    const marketplaceContract = new web3.eth.Contract(privappMarketPlaceAbi, privappMarketPlaceAddress)
+    const web3 = new Web3("https://sepolia.infura.io/v3/" + process.env.NEXT_PUBLIC_INFURA_API_KEY);
+    const domainContract = new web3.eth.Contract(privappDomainNFTAbi, privappDomainNFTAddress);
+    const marketplaceContract = new web3.eth.Contract(privappMarketPlaceAbi, privappMarketPlaceAddress);
     try {
       const domainContractEvents = await domainContract.getPastEvents('DomainMinted', {
         fromBlock: 0,
@@ -211,13 +193,13 @@ export const TransactionProvider = ({ children }) => {
         fromBlock: 0,
         toBlock: 'latest'
       });
-      setTotalMintedDomains(domainContractEvents.length)
-      setTotalSoldDomains(marketPlaceContractEvents.length)
+      setTotalMintedDomains(domainContractEvents.length);
+      setTotalSoldDomains(marketPlaceContractEvents.length);
       const allOnSaleNFTsId = await marketplaceContract.methods.getSaleNFTs().call();
 
       setNftsIdOnSale(allOnSaleNFTsId);
       setDomainEvents(domainContractEvents);
-      setMarketPlaceEvents(marketPlaceContractEvents)
+      setMarketPlaceEvents(marketPlaceContractEvents);
 
     } catch (error) {
       console.error('Hata:', error);
@@ -225,11 +207,11 @@ export const TransactionProvider = ({ children }) => {
   };
 
   const searchDomain = () => {
-    if (domainName && !mutlipleContractError) {
+    if (domainName && !searchDomainError) {
       toast.info("Domain is searching...");
 
       setTimeout(() => {
-        if (!mutlipleContractData[0].result.domainName) {
+        if (!searchDomainData.domainName) {
           setExistDomain(true);
           toast.success("Domain is available!");
         } else {
@@ -238,8 +220,7 @@ export const TransactionProvider = ({ children }) => {
         }
       }, 2000); 
     }
-  };
-  
+  }
 
   return (
     <TransactionContext.Provider
@@ -294,3 +275,4 @@ export const TransactionProvider = ({ children }) => {
     </TransactionContext.Provider>
   );
 };
+

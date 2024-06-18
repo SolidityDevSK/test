@@ -9,6 +9,7 @@ import {
   RiUserLine,
 } from "react-icons/ri";
 import { useAccount } from "wagmi";
+import { useEffect, useState } from "react";
 
 const navigation = [
   { id: 1, name: "Market", href: "/market", icon: <RiShoppingBagLine /> },
@@ -19,24 +20,30 @@ const navigation = [
 
 const MobileNav = () => {
   const router = useRouter();
-  const { address } = useAccount()
+  const { address } = useAccount();
+  const [clientReady, setClientReady] = useState(false);
+
+  useEffect(() => {
+    setClientReady(true);
+  }, []);
 
   return (
     <div className="lg:hidden fixed z-[999] bottom-0 flex items-center justify-between bg-background w-full left-0 right-0 h-16 p-5 shadow-2xl shadow-primary">
-      {navigation.map((item) => (
-        <Link
-          href={item.href}
-          key={item.id}
-          className={`${item.id == 3 && !address ? "hidden" :"flex"} flex-col items-center justify-center text-2xl ${router.pathname === item.href
-              ? "text-primary"
-              : "text-white"
-            }`}
-        >
-          {item.icon}
-        </Link>
-      ))}
-    </div>
+      {navigation.map((item) => {
+        const isActive = router.pathname === item.href;
+        const isHidden = item.id == 3 && !address;
 
+        return (
+          <Link
+            href={item.href}
+            key={item.id}
+            className={`flex flex-col items-center justify-center text-2xl ${isActive ? "text-primary" : "text-white"} ${clientReady && isHidden ? "hidden" : ""}`}
+          >
+            {item.icon}
+          </Link>
+        );
+      })}
+    </div>
   );
 };
 

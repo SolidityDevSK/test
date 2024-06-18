@@ -11,7 +11,6 @@ const SearchDomain = () => {
   const {
     searchDomain,
     handleChangeDomainName,
-    resultDomainSearch,
     domainName,
     isExistsDomain,
   } = useContext(TransactionContext);
@@ -26,10 +25,11 @@ const SearchDomain = () => {
                 id="domainName"
                 type="text"
                 autoComplete="off"
+                onKeyDown={(e) => e.key === "Enter" ? searchDomain() : null}
                 value={domainName}
-                maxLength={12}
+                maxLength={20}
                 placeholder="Select an unstoppable domain"
-                onChange={(e) => handleChangeDomainName(e.target.value)}
+                onChange={(e) => handleChangeDomainName(e)}
                 className="md:h-16 h-8 w-full max-md:text-[10px] text-lg rounded-md optionBG px-4 outline-none drop-shadow-sm transition-all duration-200 ease-in-out focus:ring-2 border focus:ring-[#ffffffB7]"
               />
               <div className="bg-primary max-md:w-8 w-12 absolute flex md:h-16 h-8 rounded-r-md right-0 top-0">
@@ -46,7 +46,7 @@ const SearchDomain = () => {
             } md:w-full w-11/12 mt-2 mx-auto`}
           >
             <span className="absolute block pt-3 text-foreground transition-all duration-200 ease-in-out">
-              <span className={`text-white text-base`}>Your Domain :</span>
+              <span className={`text-white text-base cursor-default select-none`}>Your Domain :</span>
               <span
                 className={`${
                   isExistsDomain ? "text-green-700" : "text-red-500"
