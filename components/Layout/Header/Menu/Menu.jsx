@@ -17,7 +17,7 @@ const Menu = () => {
         MenuContent.map((item, index) => (
           <Link
             className="lg:text-xl font-semibold tracking-wide text-sm text-white"
-            key={index} // "key" prop burada daha uygun olur
+            key={index}
             href={item.path}
           >
             {item.header}
