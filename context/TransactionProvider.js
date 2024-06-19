@@ -7,13 +7,14 @@ import {
   privappMarketPlaceAbi,
   privappMarketPlaceAddress,
 } from "@/lib";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 
 export const TransactionContext = createContext();
 
 import { toast } from "react-toastify";
 import { useAccount } from "wagmi";
 import Web3 from "web3";
+import { debounce } from "lodash";
 
 export const TransactionProvider = ({ children }) => {
   const [walletAddress, setWalletAddress] = useState("");
@@ -33,8 +34,8 @@ export const TransactionProvider = ({ children }) => {
   const [allSaleDetailDomains, setAllSaleDetailDomains] = useState([]);
   const [approvedDomainStatus, setApporvedDomainStatus] = useState({});
   const [allNftsIdOnSale, setNftsIdOnSale] = useState([]);
-  const [domainEvents, setDomainEvents] = useState({});
-  const [marketPlaceEvents, setMarketPlaceEvents] = useState({});
+  const [domainEvents, setDomainEvents] = useState([]);
+  const [marketPlaceEvents, setMarketPlaceEvents] = useState([]);
   const [totalSoldDomains, setTotalSoldDomains] = useState(0);
   const [totalMintedDomains, setTotalMintedDomains] = useState(0);
   const [randomSaleDomainIds, setRandomSaleDomainIds] = useState([]);
@@ -56,9 +57,37 @@ export const TransactionProvider = ({ children }) => {
 
   const { address, isConnecting, isDisconnected, isConnected } = useAccount();
 
-  useEffect(() => {
-    getAllTransactions();
+  const getAllTransactions = useCallback(async () => {
+    const web3 = new Web3("https://bsc-dataseed-public.bnbchain.org");
+    const domainContract = new web3.eth.Contract(privappDomainNFTAbi, privappDomainNFTAddress);
+    const marketplaceContract = new web3.eth.Contract(privappMarketPlaceAbi, privappMarketPlaceAddress);
+    try {
+      const domainContractEvents = await domainContract.getPastEvents('DomainMinted', {
+        fromBlock: 0,
+        toBlock: 'latest'
+      });
+      const marketPlaceContractEvents = await marketplaceContract.getPastEvents("allEvents", {
+        fromBlock: 0,
+        toBlock: 'latest'
+      });
+      setTotalMintedDomains(domainContractEvents.length);
+      setTotalSoldDomains(marketPlaceContractEvents.length);
+      const allOnSaleNFTsId = await marketplaceContract.methods.getSaleNFTs().call();
+
+      setNftsIdOnSale(allOnSaleNFTsId);
+      setDomainEvents(domainContractEvents);
+      setMarketPlaceEvents(marketPlaceContractEvents);
+
+    } catch (error) {
+      console.error('Hata:', error);
+    }
   }, []);
+
+  const debouncedGetAllTransactions = useCallback(debounce(getAllTransactions, 5000), [getAllTransactions]);
+
+  useEffect(() => {
+    debouncedGetAllTransactions();
+  }, [debouncedGetAllTransactions]);
 
   const privTokenContract = {
     address: privappTokenAddress,
@@ -132,7 +161,7 @@ export const TransactionProvider = ({ children }) => {
   useEffect(() => {
     if (!mutlipleContractData) return;
 
-    getAllTransactions();
+    debouncedGetAllTransactions();
     setAllowancedAmount(Number(mutlipleContractData[0]?.result));
     setPrivBalance(Number(mutlipleContractData[1].result));
     setMintingCost(Number(mutlipleContractData[2].result));
@@ -144,10 +173,10 @@ export const TransactionProvider = ({ children }) => {
       ? setApproveStatus(true)
       : setApproveStatus(false);
 
-  }, [mutlipleContractData]);
+  }, [mutlipleContractData, debouncedGetAllTransactions]);
 
   useEffect(() => {
-    getAllData();
+    debouncedGetAllData();
   }, [allOwnNFT]);
 
   useEffect(() => {
@@ -160,16 +189,15 @@ export const TransactionProvider = ({ children }) => {
     setMintableStatus(!approveStatus);
   }, [approveStatus]);
 
- 
   const handleChangeDomainName = (e) => {
     const sanitizedValue = e.target.value.replace(/[^a-zA-Z0-9-]/g, '');
     if (isExistsDomain) setExistDomain(false);
     setDomainName(sanitizedValue);
   };
 
-  const getAllData = async () => {
+  const getAllData = useCallback(async () => {
     if (!allOwnNFT) return;
-    const web3 = new Web3("https://sepolia.infura.io/v3/" + process.env.NEXT_PUBLIC_INFURA_API_KEY);
+    const web3 = new Web3("https://bsc-dataseed-public.bnbchain.org");
     const domainContract = new web3.eth.Contract(privappDomainNFTAbi, privappDomainNFTAddress);
     for (const item of allOwnNFT) {
       var approvedTokenStatus = await domainContract.methods.checkAllowanceStatus(privappMarketPlaceAddress, item.tokenId.toString()).call();
@@ -178,33 +206,9 @@ export const TransactionProvider = ({ children }) => {
         [item.tokenId]: approvedTokenStatus
       }));
     }
-  };
+  }, [allOwnNFT]);
 
-  const getAllTransactions = async () => {
-    const web3 = new Web3("https://sepolia.infura.io/v3/" + process.env.NEXT_PUBLIC_INFURA_API_KEY);
-    const domainContract = new web3.eth.Contract(privappDomainNFTAbi, privappDomainNFTAddress);
-    const marketplaceContract = new web3.eth.Contract(privappMarketPlaceAbi, privappMarketPlaceAddress);
-    try {
-      const domainContractEvents = await domainContract.getPastEvents('DomainMinted', {
-        fromBlock: 0,
-        toBlock: 'latest'
-      });
-      const marketPlaceContractEvents = await marketplaceContract.getPastEvents("allEvents", {
-        fromBlock: 0,
-        toBlock: 'latest'
-      });
-      setTotalMintedDomains(domainContractEvents.length);
-      setTotalSoldDomains(marketPlaceContractEvents.length);
-      const allOnSaleNFTsId = await marketplaceContract.methods.getSaleNFTs().call();
-
-      setNftsIdOnSale(allOnSaleNFTsId);
-      setDomainEvents(domainContractEvents);
-      setMarketPlaceEvents(marketPlaceContractEvents);
-
-    } catch (error) {
-      console.error('Hata:', error);
-    }
-  };
+  const debouncedGetAllData = useCallback(debounce(getAllData, 5000), [getAllData]);
 
   const searchDomain = () => {
     if (domainName && !searchDomainError) {
@@ -218,7 +222,7 @@ export const TransactionProvider = ({ children }) => {
           setExistDomain(false);
           toast.error("The domain name has already been sold!");
         }
-      }, 2000); 
+      }, 2000);
     }
   }
 
@@ -275,4 +279,3 @@ export const TransactionProvider = ({ children }) => {
     </TransactionContext.Provider>
   );
 };
-

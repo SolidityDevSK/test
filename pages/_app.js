@@ -13,18 +13,18 @@ import "@rainbow-me/rainbowkit/styles.css";
 
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
-import { sepolia } from "wagmi/chains";
-import { infuraProvider, } from "wagmi/providers/infura";
+import { bsc } from "wagmi/chains";
 import { TransactionProvider } from "@/context/TransactionProvider";
-
+import { publicProvider } from 'wagmi/providers/public'
 
 import { SkeletonTheme } from "react-loading-skeleton";
 import 'react-loading-skeleton/dist/skeleton.css'
 //RainBowKit Configure
 
+
 const { chains, publicClient } = configureChains(
-  [sepolia],
- [infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_API_KEY })]
+  [bsc],
+  [publicProvider()]
   // [alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_AlCHEMY_API_KEY })]
 );
 

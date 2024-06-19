@@ -276,6 +276,19 @@
     "type": "event"
   },
   {
+    "inputs": [],
+    "name": "_owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -315,6 +328,29 @@
   {
     "inputs": [
       {
+        "internalType": "string[]",
+        "name": "domainNames",
+        "type": "string[]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "ipfsHashes",
+        "type": "string[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "recipients",
+        "type": "address[]"
+      }
+    ],
+    "name": "batchMintAwardDomains",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "domainName",
         "type": "string"
@@ -341,6 +377,24 @@
         "type": "bool"
       }
     ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "newBgHash",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "changeDomainBackgroundImage",
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -657,34 +711,11 @@
         "internalType": "string",
         "name": "ipfsHash",
         "type": "string"
-      },
-      {
-        "internalType": "address",
-        "name": "who",
-        "type": "address"
-      }
-    ],
-    "name": "mintAwardDomain",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "domainName",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "ipfsHash",
-        "type": "string"
       }
     ],
     "name": "mintDomain",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
