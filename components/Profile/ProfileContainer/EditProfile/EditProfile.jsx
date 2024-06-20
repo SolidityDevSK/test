@@ -14,18 +14,28 @@ const RegisterForm = () => {
 
   const [walletaddress, setWalletAddress] = useState("Connect To With A Web3 Wallet")
   const [image, setImage] = useState({});
-
+  const [inputStatus, setInputStatus] = useState(false)
   const { address } = useAccount()
 
   const { profileImgUrl, setProfileImageUrl } = useContext(TransactionContext)
 
   useEffect(() => {
     if (!address) return
-    getUsers(address);
-    setWalletAddress(address)
+    else{
+      console.log(profileImgUrl,"dsd");
+      getUsers(address);
+      setWalletAddress(address)
+      if(!profileImgUrl) setInputStatus(true)
+      else setInputStatus(false)
+    }
+   
   }, [address]);
 
-
+const isInputDisabled = ()=>{
+  console.log(profileImgUrl, "pro");
+  if(!walletaddress) return true
+  
+} 
 
   const getUsers = async (walletaddress) => {
     await fetch('/api/login', {
@@ -37,9 +47,9 @@ const RegisterForm = () => {
     }).then((resp) => resp.json())
       .then((data) => {
         if (!data.user) {
-          setProfileImageUrl("")
-          return
-        }
+        setProfileImageUrl("");
+        return;
+      }
         setProfileImageUrl(data.user.imgUrl)
       })
       .catch((err) => {
@@ -132,7 +142,7 @@ const RegisterForm = () => {
               >
                 <Input
                   type="file"
-                  disabled={profileImgUrl || !address}
+                  disabled={!inputStatus}
                   onChange={handleImageChange}
                 />
 
@@ -141,7 +151,7 @@ const RegisterForm = () => {
           </div>
 
           <div className="flex items-center justify-center mt-10">
-            <Button disabled={profileImgUrl || !address} variant="outline" className="text-primary">
+            <Button disabled={!inputStatus} variant="outline" className="text-primary">
               Update Profile
             </Button>
           </div>

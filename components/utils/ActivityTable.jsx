@@ -23,15 +23,15 @@ const ActivityTable = ({ data, itemsPerPage }) => {
     switch (item.event) {
       case "OfferCreated":
         return (
-          Number(item.returnValues.price) / (10 ** 8)
+          Number(item.returnValues.price)
         );
       case "OfferCancelled":
         return (
-          Number(item.returnValues.price) / (10 ** 8)
+          Number(item.returnValues.price) 
         );
         case "DomainSold":
           return(
-            Number(item.returnValues.price) / (10 ** 8)
+            Number(item.returnValues.price)
           )
 
       default:
@@ -40,27 +40,27 @@ const ActivityTable = ({ data, itemsPerPage }) => {
   }
 
   const checkFromValue = (item) => {
-    switch (item.event) {
+    switch (item.Type) {
       case "OfferCreated":
         return (
-          item.returnValues.seller.slice(0, 5).toUpperCase() + "..." + item.returnValues.seller.slice(-5).toUpperCase()
+          item.From?.slice(0, 5).toUpperCase() + "..." + item.From?.slice(-5).toUpperCase()
         );
       case "DomainSold":
         return (
-          item.returnValues.seller.slice(0, 5).toUpperCase() + "..." + item.returnValues.seller.slice(-5).toUpperCase()
+          item.From?.slice(0, 5).toUpperCase() + "..." + item.From?.slice(-5).toUpperCase()
         );
       case "OfferCancelled":
         return (
-          item.returnValues.seller.slice(0, 5).toUpperCase() +
+          item.From?.slice(0, 5).toUpperCase() +
           "..." +
-          item.returnValues.seller.slice(-5).toUpperCase()
+          item.From?.slice(-5).toUpperCase()
         );
       default:
         return "0x000...00000";
     }
   };
   const checkToValue = (item) => {
-    switch (item.event) {
+    switch (item.Type) {
       case "OfferCreated":
         return "Privapp MarketPlace Contract";
       case "OfferCancelled":
@@ -71,13 +71,7 @@ const ActivityTable = ({ data, itemsPerPage }) => {
         );
       case "DomainSold":
         return (
-          item.returnValues.buyer.slice(0, 5).toUpperCase() + "..." + item.returnValues.buyer.slice(-5).toUpperCase()
-        );
-      default:
-        return (
-          item.address.slice(0, 5) +
-          "..." +
-          item.address.slice(-5)
+          item.To.slice(0, 5).toUpperCase() + "..." + item.To.slice(-5).toUpperCase()
         );
     }
   };
@@ -112,10 +106,10 @@ const ActivityTable = ({ data, itemsPerPage }) => {
               className="cursor-pointer lg:px-2 lg:text-base md:text-sm text-xs grid grid-cols-12 border-b-2 py-4 hover:bg-[#1d272c] text-white"
             >
               <div className="md:col-span-2 col-span-3">
-                <p>{item.event}</p>
+                <p>{item?.Type}</p>
               </div>
               <div className="md:flex hidden md:col-span-1 col-span-3 text-center">
-                <p className="mx-auto">{item?.returnValues?.tokenId?.toString()}</p>
+                <p className="mx-auto">{item?.ItemId}</p>
               </div>
               <div className="md:col-span-3 flex col-span-3">
                 <p className="mx-auto">

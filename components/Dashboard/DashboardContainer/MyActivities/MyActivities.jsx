@@ -15,8 +15,10 @@ const {address } = useAccount()
 
   const { domainEvents, marketPlaceEvents} = useContext(TransactionContext)
   
-  let filteredMarketPlaceEvents = marketPlaceEvents?.filter(item => Object.values(item.returnValues).includes(address));
-  let filteredDomainEvents = domainEvents?.filter(item => Object.values(item.returnValues).includes(address));
+  console.log(domainEvents, marketPlaceEvents, "da");
+
+  let filteredMarketPlaceEvents = marketPlaceEvents?.filter(item => Object.values(item.Log.returnValues).includes(address));
+  let filteredDomainEvents = domainEvents?.filter(item => Object.values(item.Log.returnValues).includes(address));
 
 
   useEffect(() => {

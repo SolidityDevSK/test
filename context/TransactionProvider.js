@@ -8,6 +8,10 @@ import {
   privappMarketPlaceAddress,
 } from "@/lib";
 import { createContext, useEffect, useState } from "react";
+import _ from "lodash"
+
+
+
 
 export const TransactionContext = createContext();
 
@@ -158,7 +162,8 @@ export const TransactionProvider = ({ children }) => {
 
  
   const handleChangeDomainName = (e) => {
-    const sanitizedValue = e.target.value.replace(/[^a-zA-Z0-9-]/g, '');
+    const loverCase = e.target.value.toLowerCase();
+    const sanitizedValue = loverCase.replace(/[^a-zA-Z0-9-]/g, '');
     if (isExistsDomain) setExistDomain(false);
     setDomainName(sanitizedValue);
   };
@@ -177,25 +182,23 @@ export const TransactionProvider = ({ children }) => {
   };
 
   const getAllTransactions = async () => {
-    const web3 = new Web3("https://bsc-dataseed.bnbchain.org");
-    const domainContract = new web3.eth.Contract(privappDomainNFTAbi, privappDomainNFTAddress);
-    const marketplaceContract = new web3.eth.Contract(privappMarketPlaceAbi, privappMarketPlaceAddress);
+   
     try {
-      const domainContractEvents = await domainContract.getPastEvents('DomainMinted', {
-        fromBlock: 0,
-        toBlock: 'latest'
-      });
-      const marketPlaceContractEvents = await marketplaceContract.getPastEvents("allEvents", {
-        fromBlock: 0,
-        toBlock: 'latest'
-      });
-      setTotalMintedDomains(domainContractEvents.length);
-      setTotalSoldDomains(marketPlaceContractEvents.length);
-      const allOnSaleNFTsId = await marketplaceContract.methods.getSaleNFTs().call();
+      const domainContractEventsResp = await fetch('/api/domain');
+      const marketPlaceContractEventsResp = await fetch('/api/marketplace');
+      const domainContractEventsData = await domainContractEventsResp.json();
+      const marketPlaceContractEventsData = await marketPlaceContractEventsResp.json();
+     
+      const domainSoldEvents = _.filter(marketPlaceContractEventsData.data, { Type: 'DomainSold' });
+      console.log(domainSoldEvents ," domain sold ecvetns");
+      console.log(marketPlaceContractEventsData, "event");
+      setTotalMintedDomains(domainContractEventsData.data.length);
+      setTotalSoldDomains(domainSoldEvents);
+      // const allOnSaleNFTsId = await marketplaceContract.methods.getSaleNFTs().call();
 
-      setNftsIdOnSale(allOnSaleNFTsId);
-      setDomainEvents(domainContractEvents);
-      setMarketPlaceEvents(marketPlaceContractEvents);
+      setDomainEvents(domainContractEventsData.data);
+      console.log(domainEvents,"domain Events");
+      setMarketPlaceEvents(marketPlaceContractEventsData.data);
 
     } catch (error) {
       console.error('Hata:', error);
