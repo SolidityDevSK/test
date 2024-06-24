@@ -43,7 +43,7 @@ const ImageComponent = ({ src }) => {
 
 const HeroRight = () => {
 
-  const { allSaleDetailDomains, setRandomSaleDomainIds } = useContext(TransactionContext)
+  const { allSaleDetailDomains, setRandomSaleDomainItems } = useContext(TransactionContext)
   
   const [data, setData] = useState([
     "/nft-1.jpg",
@@ -58,34 +58,11 @@ const HeroRight = () => {
   useEffect(() => {
     if (allSaleDetailDomains?.length > 3) {
       const randomItems = _.sampleSize(allSaleDetailDomains, 4);
-
-      const randomId = _.map(randomItems, "tokenId")
-      setRandomSaleDomainIds(randomId)
-
-      getRandomDomainUri(randomId)
+      setRandomSaleDomainItems(randomItems)
     }
   }, [allSaleDetailDomains])
 
 
-  const getRandomDomainUri = async (randomIds) => {
-
-    const web3 = new Web3("https://sepolia.infura.io/v3/" + process.env.NEXT_PUBLIC_INFURA_API_KEY)
-    const contract = new web3.eth.Contract(privappDomainNFTAbi, privappDomainNFTAddress)
-
-    try {
-      const uriPromises = randomIds.map(async (tokenId) => {
-        const result = await contract.methods.getDomainInformationById(tokenId.toString()).call();
-        return result;
-      });
-      const uris = await Promise.all(uriPromises);
-
-      let ipfsHashs = _.map(uris, "ipfsHash")
-      let srcData = _.map(ipfsHashs, (hash) => `https://gateway.pinata.cloud/ipfs/${hash}`);
-      setData(srcData)
-    } catch (error) {
-      console.error("Hata oluştu:", error);
-    }
-  }
 
   return (
     <div className="relative flex flex-col mx-auto px-5">

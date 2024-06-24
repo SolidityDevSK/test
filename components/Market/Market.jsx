@@ -13,15 +13,16 @@ const Market = () => {
   const [filteredId, setFilteredId] = useState([])
 
   useEffect(() => {
-    const filteredDomains = allSaleDetailDomains?.filter(domain => domain.domainName.toLowerCase().startsWith(inputValue.toLowerCase()));
+    const filteredDomains = allSaleDetailDomains?.filter(domain => domain.DomainName.toLowerCase().startsWith(inputValue.toLowerCase()));
+   
     let allFilteredId = []
     if (filteredDomains) {
       filteredDomains.map((i) => {
-        allFilteredId.push(i.tokenId)
+        allFilteredId.push(i)
       })
     }else{
       allSaleDetailDomains?.map((i)=>{
-        allFilteredId.push(i.tokenId)
+        allFilteredId.push(i)
       })
     }
     setFilteredId(allFilteredId)

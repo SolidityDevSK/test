@@ -6,8 +6,8 @@ const Slider =({ onSaleNFTs}) => {
 
   return (
     <div className="grid md:grid-cols-2 xl:grid-cols-2 place-content-center place-items-center mt-10">
-    {onSaleNFTs && onSaleNFTs.map((id, key)=>
-    <Card id={id} key={key}/>
+    {onSaleNFTs && onSaleNFTs.map((item, key)=>
+    <Card domain={item} key={key}/>
     )}
      
     </div>

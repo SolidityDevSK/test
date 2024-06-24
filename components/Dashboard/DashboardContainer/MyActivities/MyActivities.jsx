@@ -13,22 +13,16 @@ const {address } = useAccount()
 
   const [mergedArray, setMergedArray] = useState([]);
 
-  const { domainEvents, marketPlaceEvents} = useContext(TransactionContext)
-  
-  console.log(domainEvents, marketPlaceEvents, "da");
+  const {allOwnMarketEventData} = useContext(TransactionContext)
 
-  let filteredMarketPlaceEvents = marketPlaceEvents?.filter(item => Object.values(item.Log.returnValues).includes(address));
-  let filteredDomainEvents = domainEvents?.filter(item => Object.values(item.Log.returnValues).includes(address));
-
-
+  console.log(allOwnMarketEventData, "allowed");
   useEffect(() => {
-    let newArray = [...filteredDomainEvents, ...filteredMarketPlaceEvents];
-    let sortedData = _.sortBy(newArray, 'blocknumber').reverse();
+    let sortedData = _.sortBy(allOwnMarketEventData, 'Timestamp').reverse();
     setMergedArray(sortedData);
   }, [address]);
 
-  const itemsPerPage = 7;
-  
+  const itemsPerPage = 5;
+  console.log(mergedArray, "mergedArray");
   return (
     <div className="lg:px-20 md:px-10 px-2 my-10">
       <ActivityTable data={mergedArray} itemsPerPage={itemsPerPage} />

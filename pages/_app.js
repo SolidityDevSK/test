@@ -13,7 +13,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
-import { bsc } from "wagmi/chains";
+import { bsc,sepolia } from "wagmi/chains";
 import { TransactionProvider } from "@/context/TransactionProvider";
 import { publicProvider } from 'wagmi/providers/public'
 
@@ -23,7 +23,7 @@ import 'react-loading-skeleton/dist/skeleton.css'
 
 
 const { chains, publicClient } = configureChains(
-  [bsc],
+  [sepolia],
   [publicProvider()]
   // [alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_AlCHEMY_API_KEY })]
 );
@@ -46,7 +46,6 @@ export default function App({ Component, pageProps }) {
     <WagmiConfig config={wagmiConfig}>
       <RainbowKitProvider chains={chains} locale="en-US">
           <TransactionProvider>
-          
               <AnimatePresence mode="wait">
                 <motion.div key={router.pathname}>
                   <Layout>

@@ -4,17 +4,13 @@ import React, { useState } from "react";
 
 const MarketContainer = ({ onSaleNFTs }) => {
   const [currentPage, setCurrentPage] = useState(0);
-
-
-
-
   const paginatedData = _.chunk(onSaleNFTs, 4);
-
+  
   return (
     <div className="w-full text-foreground">
       <div className="grid md:grid-cols-2 2xl:grid-cols-3 lg:gap-5">
         {paginatedData &&
-          paginatedData[currentPage]?.map((id, key) => <Card id={id} key={key} />)}
+          paginatedData[currentPage]?.map((item, key) => <Card domain={item} key={key} />)}
       </div>
 
       <nav className="flex items-center justify-center">

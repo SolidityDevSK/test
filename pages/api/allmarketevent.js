@@ -5,7 +5,7 @@ const handler = async (req, res) => {
     const { db, client } = await connectMongoDB();
     console.log("Connected to MongoDB");
 
-    const allData = await db.collection('marketplace').find({}).toArray();
+    const allData = await db.collection('allmarketevent').find({}).toArray();
     console.log("Fetched data:", allData);
 
     client.close();

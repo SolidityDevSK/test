@@ -6,7 +6,7 @@ import Link from "next/link";
 import React, { useContext, useEffect, useState } from "react";
 // import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { usePrivappContractRead, usePrivappContractWrite } from "@/hooks";
+import {usePrivappContractWrite } from "@/hooks";
 import numeral from "numeral";
 import { TransactionContext } from "@/context/TransactionProvider";
 import { privappMarketPlaceAddress } from "@/lib";
@@ -15,20 +15,19 @@ import { useAccount, useWaitForTransaction } from "wagmi";
 import { toast } from "react-toastify";
 
 
-const Card = ({ id }) => {
-
-  id = id.toString();
+const Card = ({ domain }) => {
+  console.log(domain, "domain");
   const [like, setLike] = useState(false);
   const [likesCount, setLikesCount] = useState(0)
-  const { data: domainData } = usePrivappContractRead("domain", { args: [id], functionName: "getDomainInformationById", watch: false })
-  const { data: priceData } = usePrivappContractRead("market", { args: [id], functionName: "getDomainOfferPrice", watch: false })
+ // const { data: domainData } = usePrivappContractRead("domain", { args: [id], functionName: "getDomainInformationById", watch: false })
+  // const { data: priceData } = usePrivappContractRead("market", { args: [id], functionName: "getDomainOfferPrice", watch: false })
 
 
-  const {allowancedMarketPlaceAmount, allOwnNFT, animationEnd, likesData } = useContext(TransactionContext)
+  const { approvalTokenStatus, animationEnd, likesData } = useContext(TransactionContext)
 
   const { address } = useAccount()
 
-  const {data:buyData, write: buyWrite} = usePrivappContractWrite("market")
+  const {data: buyData, write: buyWrite} = usePrivappContractWrite("market")
   
   const {data:approveData, write: approveWrite } = usePrivappContractWrite("token")
   
@@ -38,7 +37,7 @@ const Card = ({ id }) => {
 
 
   const buyDomain = () => {
-    buyWrite({ functionName: "buyDomain", args: [id] })
+    buyWrite({ functionName: "buyDomain", args: [domain.ItemId] })
   }
 
 
@@ -107,7 +106,7 @@ const Card = ({ id }) => {
 
 
   useEffect(() => {
-    let findedData = _.find(likesData, { tokenId: id })
+    let findedData = _.find(likesData, { tokenId: domain.ItemId })
     if(!findedData) return 
     setLikesCount(findedData.likes)
     if (address) {
@@ -117,8 +116,8 @@ const Card = ({ id }) => {
 
   }, [likesData])
 
-  const approveToken = () => {
-    approveWrite({ functionName: "approve", args: [privappMarketPlaceAddress, priceData] })
+  const approveToken = (price) => {
+    approveWrite({ functionName: "approve", args: [privappMarketPlaceAddress, price] })
   }
 
   return (
@@ -142,7 +141,7 @@ const Card = ({ id }) => {
         >
  
             <Image
-              src={`https://gateway.pinata.cloud/ipfs/${domainData?.ipfsHash}`}
+              src={`https://gateway.pinata.cloud/ipfs/${domain.IpfsHash}`}
               alt="card-image"
               width={1250}
               height={1250}
@@ -151,12 +150,12 @@ const Card = ({ id }) => {
           <div>
             <div className="mt-5 flex flex-col md:flex-row text-center items-center justify-between px-5">
               <div className="font-bold mb-2">
-                {domainData?.domainName} .privapp
+                {domain.DomainName} .privapp
               </div>
               <div className="flex flex-col">
                 <div className="flex ml-auto gap-2">
                   <p className="text-white px-2">
-                    {numeral(Number(priceData) / 10 ** 8).format("0,0.000")}
+                    {numeral(domain.Price).format("0,0.000")}
                   </p>
                   <Image
                     src="/priva-32.png"
@@ -168,18 +167,18 @@ const Card = ({ id }) => {
                 </div>
                 <div className="flex">
                   {
-                    _.includes(allOwnNFT?.map((item) => (item.tokenId)), BigInt(id)) ? <p className="bg-[#cdcdcd96] px-2 border[1px] mt-3 py-2 text-sm rounded-md text-gray-800">This domain belongs to you</p> : (
+                    domain.From === address ? <p className="bg-[#cdcdcd96] px-2 border[1px] mt-3 py-2 text-sm rounded-md text-gray-800">This domain belongs to you</p> : (
 
                       <div>
                         <button onClick={() => {
-                          approveToken()
-                        }} className={`${allowancedMarketPlaceAmount >= priceData ? "bg-[#cdcdcd96] border-none cursor-not-allowed text-gray-800" : "hover:bg-white mx-1 hover:text-black text-white hover:font-bold hover:border-transparent transilation delay-75 border-primary"} border-2  rounded-lg px-5 py-1 mt-2`}>
-                          <p className={`${allowancedMarketPlaceAmount >= priceData ? "hover:animate-none " : "animate-pulse"}`}>Approve</p>
+                        approvalTokenStatus.MarketApprovalBalance < domain.Price && approveToken()
+                        }} className={`${approvalTokenStatus.MarketApprovalBalance >= domain.Price ? "bg-[#cdcdcd96] border-none cursor-not-allowed text-gray-800" : "hover:bg-white mx-1 hover:text-black text-white hover:font-bold hover:border-transparent transilation delay-75 border-primary"} border-2  rounded-lg px-5 py-1 mt-2`}>
+                          <p className={`${approvalTokenStatus.MarketApprovalBalance >= domain.Price ? "hover:animate-none " : "animate-pulse"}`}>Approve</p>
                         </button>
                         <button onClick={() => {
-                          buyDomain()
-                        }} className={`${allowancedMarketPlaceAmount < priceData ? "bg-[#cdcdcd96] border-none cursor-not-allowed text-gray-800" : "hover:bg-white mx-1 hover:text-black text-white hover:font-bold hover:border-transparent transilation delay-75 border-primary"} border-2  rounded-lg px-5 py-1 mt-2`}>
-                          <p className={`${allowancedMarketPlaceAmount < priceData ? "hover:animate-none " : "animate-pulse"}`}>{effectText()}</p>
+                          approvalTokenStatus.MarketApprovalBalance >= domain.Price && buyDomain()
+                        }} className={`${approvalTokenStatus.MarketApprovalBalance < domain.Price ? "bg-[#cdcdcd96] border-none cursor-not-allowed text-gray-800" : "hover:bg-white mx-1 hover:text-black text-white hover:font-bold hover:border-transparent transilation delay-75 border-primary"} border-2  rounded-lg px-5 py-1 mt-2`}>
+                          <p className={`${approvalTokenStatus.MarketApprovalBalance < domain.Price ? "hover:animate-none " : "animate-pulse"}`}>{effectText()}</p>
                         </button>
                       </div>
 
@@ -190,7 +189,7 @@ const Card = ({ id }) => {
             <div className="mt-5 flex flex-col md:flex-row text-center justify-between px-5 py-5">
               <div className="flex flex-col gap-2">
                 <Link
-                  href={`https://bscscan.com/tx/${domainData?.transactionHash}`}
+                  href={`https://bscscan.com/tx/${domain.TxId}`}
                   target="_blank"
                 >
                   #nft &mdash; #privapp
@@ -200,7 +199,7 @@ const Card = ({ id }) => {
               <div
                 className="flex items-center justify-center mt-5 cursor-pointer"
                 onClick={() =>
-                   handleLike(id)
+                   handleLike(domain.ItemId)
                   }
               >
                 <BsFillSuitHeartFill

@@ -1,11 +1,9 @@
-import { usePrivappContactReads, usePrivappContractRead } from "@/hooks";
+import { usePrivappContactReads } from "@/hooks";
 import {
   privappDomainNFTAbi,
   privappDomainNFTAddress,
   privappTokenAbi,
   privappTokenAddress,
-  privappMarketPlaceAbi,
-  privappMarketPlaceAddress,
 } from "@/lib";
 import { createContext, useEffect, useState } from "react";
 import _ from "lodash"
@@ -17,40 +15,29 @@ export const TransactionContext = createContext();
 
 import { toast } from "react-toastify";
 import { useAccount } from "wagmi";
-import Web3 from "web3";
 
 export const TransactionProvider = ({ children }) => {
   const [walletAddress, setWalletAddress] = useState("");
   const [domainName, setDomainName] = useState("");
-  const [willSearchDomainName, setWillSearchDomainName] = useState("");
   const [privBalance, setPrivBalance] = useState(0);
   const [isExistsDomain, setExistDomain] = useState(false);
   const [mintingCost, setMintingCost] = useState(0);
-  const [mintableStatus, setMintableStatus] = useState(false);
-  const [approveStatus, setApproveStatus] = useState(false);
-  const [allowancedAmount, setAllowancedAmount] = useState(0);
-  const [allowancedMarketPlaceAmount, setAllowancedMarketPlaceAmount] = useState(0);
+  const [allOwnMarketEventData,setAllOwnMarketEventData]= useState([])
   const [selectBGImage, setBgImage] = useState(0);
   const [allOwnNFT, setAllOwnNFT] = useState([]);
   const [selectFilter, setFilter] = useState("");
   const [selectMarketFilter, setMarketFilter] = useState("");
   const [allSaleDetailDomains, setAllSaleDetailDomains] = useState([]);
   const [approvedDomainStatus, setApporvedDomainStatus] = useState({});
-  const [allNftsIdOnSale, setNftsIdOnSale] = useState([]);
-  const [domainEvents, setDomainEvents] = useState([]);;
-  const [marketPlaceEvents, setMarketPlaceEvents] = useState([]);
+  const [approvalTokenStatus,setApprovalTokenStatus] = useState([]);
+  const [domainEvents, setDomainEvents] = useState([]);
   const [totalSoldDomains, setTotalSoldDomains] = useState(0);
   const [totalMintedDomains, setTotalMintedDomains] = useState(0);
-  const [randomSaleDomainIds, setRandomSaleDomainIds] = useState([]);
+  const [randomSaleDomainItems, setRandomSaleDomainItems] = useState([]);
   const [profileImgUrl, setProfileImageUrl] = useState("");
   const [isLoading, setLoading] = useState(false);
   const [animationEnd, setAnimationEnd] = useState(false);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setAnimationEnd(true);
-    }, 200);
-  }, []);
 
   const [selectAuction, setAuction] = useState({
     select: "create",
@@ -70,11 +57,6 @@ export const TransactionProvider = ({ children }) => {
     abi: privappDomainNFTAbi,
   };
 
-  const privMarketPlaceContract = {
-    address: privappMarketPlaceAddress,
-    abi: privappMarketPlaceAbi,
-  };
-
   const contractConfigurations = [
     {
       ...privTokenContract,
@@ -89,66 +71,33 @@ export const TransactionProvider = ({ children }) => {
     {
       ...privDomainContract,
       functionName: "showPrivPrice",
-    },
-    {
-      ...privDomainContract,
-      functionName: "getAllDomains",
-      args: [address],
-    },
-    {
-      ...privTokenContract,
-      functionName: "allowance",
-      args: [address, privappMarketPlaceAddress]
-    },
-    {
-      ...privMarketPlaceContract,
-      functionName: "getAllSaleItem",
-    },
+    }
   ];
 
-  const { data: searchDomainData, isError: searchDomainError } = usePrivappContractRead("domain", {
-    functionName: "domainExists",
-    args: [domainName],
-  });
 
   const { data: mutlipleContractData, isError: mutlipleContractError } = usePrivappContactReads(
     contractConfigurations
   );
 
-  useEffect(() => {
-    const fetchLikes = async () => {
-      try {
-        const res = await fetch('/api/likes');
-        const data = await res.json();
-        setLikesData(data);
-      } catch (error) {
-        console.error("Error fetching likes:", error);
-      }
-    };
 
-    fetchLikes();
+  const fetchData = async () => {
+    await Promise.all([getAllData()]);
+    setAnimationEnd(true);
+  };
+
+  useEffect(() => {
+    getAllData()
+    fetchData();
   }, []);
 
   useEffect(() => {
     if (!mutlipleContractData) return;
-
-    getAllTransactions();
-    setAllowancedAmount(Number(mutlipleContractData[0]?.result));
     setPrivBalance(Number(mutlipleContractData[1].result));
     setMintingCost(Number(mutlipleContractData[2].result));
 
-    setAllOwnNFT(mutlipleContractData[3]?.result);
-    setAllowancedMarketPlaceAmount(mutlipleContractData[4]?.result?.toString());
-    setAllSaleDetailDomains(mutlipleContractData[5].result);
-    Number(mutlipleContractData[0].result) > Number(mutlipleContractData[2].result)
-      ? setApproveStatus(true)
-      : setApproveStatus(false);
-
   }, [mutlipleContractData]);
 
-  useEffect(() => {
-    getAllData();
-  }, [allOwnNFT]);
+
 
   useEffect(() => {
     setTimeout(() => {
@@ -156,9 +105,6 @@ export const TransactionProvider = ({ children }) => {
     }, 2000);
   }, [mutlipleContractData]);
 
-  useEffect(() => {
-    setMintableStatus(!approveStatus);
-  }, [approveStatus]);
 
  
   const handleChangeDomainName = (e) => {
@@ -169,57 +115,89 @@ export const TransactionProvider = ({ children }) => {
   };
 
   const getAllData = async () => {
-    if (!allOwnNFT) return;
-    const web3 = new Web3("https://bsc-dataseed.bnbchain.org");
-    const domainContract = new web3.eth.Contract(privappDomainNFTAbi, privappDomainNFTAddress);
-    for (const item of allOwnNFT) {
-      var approvedTokenStatus = await domainContract.methods.checkAllowanceStatus(privappMarketPlaceAddress, item.tokenId.toString()).call();
-      setApporvedDomainStatus((prevStatus) => ({
-        ...prevStatus,
-        [item.tokenId]: approvedTokenStatus
-      }));
-    }
-  };
 
-  const getAllTransactions = async () => {
-   
     try {
-      const domainContractEventsResp = await fetch('/api/domain');
-      const marketPlaceContractEventsResp = await fetch('/api/marketplace');
-      const domainContractEventsData = await domainContractEventsResp.json();
-      const marketPlaceContractEventsData = await marketPlaceContractEventsResp.json();
-     
-      const domainSoldEvents = _.filter(marketPlaceContractEventsData.data, { Type: 'DomainSold' });
-      console.log(domainSoldEvents ," domain sold ecvetns");
-      console.log(marketPlaceContractEventsData, "event");
-      setTotalMintedDomains(domainContractEventsData.data.length);
-      setTotalSoldDomains(domainSoldEvents);
-      // const allOnSaleNFTsId = await marketplaceContract.methods.getSaleNFTs().call();
+      const domainContractEventsResp = await fetch('/api/minteddomain');
+ 
+      const soldDomainEventsResp = await fetch('/api/soldmarket');
 
-      setDomainEvents(domainContractEventsData.data);
-      console.log(domainEvents,"domain Events");
-      setMarketPlaceEvents(marketPlaceContractEventsData.data);
+      const domainLikeEventsResp = await fetch('/api/likes');
+
+      const activeSaleDomainsResp = await fetch('/api/activemarket');
+
+      const allMarketEventResp = await fetch('/api/allmarketevent')
+
+      const appravalAmountResp = await fetch("/api/approvedtoken")
+
+
+      const activeSaleDomainsData = await activeSaleDomainsResp.json();
+      const domainLikeEventsData = await domainLikeEventsResp.json();
+      const domainContractEventsData = await domainContractEventsResp.json();
+      const soldDomainEventsData = await soldDomainEventsResp.json();
+      const allMarketEventData = await allMarketEventResp.json();
+      const appravalAmountData = await appravalAmountResp.json();
+
+ 
+
+      setAllSaleDetailDomains(activeSaleDomainsData)
+      setLikesData(domainLikeEventsData);
+      setTotalMintedDomains(domainContractEventsData);
+      setTotalSoldDomains(soldDomainEventsData.data.length);
+      // const allOnSaleNFTsId = await marketplaceContract.methods.getSaleNFTs().call();
+      console.log(appravalAmountData,"appravalAmountData");
+      setApprovalTokenStatus((_.filter(appravalAmountData, (item)=>item.From === address)[0]))
+      setAllOwnMarketEventData(_.filter(allMarketEventData.data, (item) => item.From === address || item.To === address))
+      setDomainEvents(domainContractEventsData);
+      if (!address || !domainContractEventsData) return;
+      let allOwnNFTItems = _.filter(domainContractEventsData, (item)=>item.From === address)
+      setAllOwnNFT(allOwnNFTItems)
+      for (const item of allOwnNFTItems) {
+        var approvedTokenStatus = item.Approval
+        setApporvedDomainStatus((prevStatus) => ({
+          ...prevStatus,
+          [item.TokenId]: approvedTokenStatus
+        }));
+      }
 
     } catch (error) {
       console.error('Hata:', error);
     }
+
+
+   
   };
 
-  const searchDomain = () => {
-    if (domainName && !searchDomainError) {
-      toast.info("Domain is searching...");
 
-      setTimeout(() => {
-        if (!searchDomainData.domainName) {
-          setExistDomain(true);
-          toast.success("Domain is available!");
-        } else {
-          setExistDomain(false);
-          toast.error("The domain name has already been sold!");
-        }
-      }, 2000); 
+  const searchDomain = async () => {
+    toast.info("Domain is searching...");
+
+    try {
+        const response = await fetch('/api/minteddomain', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ domainName })
+        });
+
+        const result = await response.json();
+
+        console.log(result, "result");
+        setTimeout(() => {
+            if (!result.DomainName) {
+                setExistDomain(true);
+                toast.success("Domain is available!");
+            } else {
+                setExistDomain(false);
+                toast.error("The domain name has already been sold!");
+            }
+        }, 2000);
+    } catch (error) {
+        console.error("Error searching domain:", error);
+        toast.error("An error occurred while searching the domain.");
     }
-  }
+};
+
 
   return (
     <TransactionContext.Provider
@@ -235,9 +213,7 @@ export const TransactionProvider = ({ children }) => {
         isExistsDomain,
         selectBGImage,
         setBgImage,
-        setApproveStatus,
-        approveStatus,
-        mintableStatus,
+        approvalTokenStatus,
         selectFilter,
         setFilter,
         selectMarketFilter,
@@ -248,22 +224,18 @@ export const TransactionProvider = ({ children }) => {
         isDisconnected,
         isConnected,
         allOwnNFT,
+        allOwnMarketEventData,
+        allSaleDetailDomains,
         setAllOwnNFT,
         getAllData,
         approvedDomainStatus,
         setApporvedDomainStatus,
         isLoading,
-        getAllTransactions,
         domainEvents,
-        marketPlaceEvents,
-        allNftsIdOnSale,
-        setAllSaleDetailDomains,
-        allSaleDetailDomains,
-        allowancedMarketPlaceAmount,
         profileImgUrl,
         setProfileImageUrl,
-        randomSaleDomainIds,
-        setRandomSaleDomainIds,
+        randomSaleDomainItems,
+        setRandomSaleDomainItems,
         animationEnd,
         likesData,
         totalSoldDomains,

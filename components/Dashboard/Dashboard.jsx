@@ -1,15 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import { DashboardContainer, DashboardMenu } from ".";
-import { useAccount } from "wagmi";
 
-const profileMenuData = {
-  first: "profile",
-};
-const navMenu = [
-  { text: "Market", path: "/market" },
-  { text: "Activity", path: "/activity" },
-  { text: "Community", path: "/community" },
-];
 
 
 const Dashboard = () => {

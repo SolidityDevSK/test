@@ -9,14 +9,14 @@ import Skeleton from "@/components/Layout/Skeleton/Skeleton";
 
 
 const Auction = () => {
-  const { randomSaleDomainIds, animationEnd } = useContext(TransactionContext)
+  const { randomSaleDomainItems, animationEnd } = useContext(TransactionContext)
 
   return (
     <div className="bg-[#f3f9fc08] md:mt-40 mt-72 border-t border-primary/10">
       {animationEnd ? (<div className="font-extrabold text-center md:text-2xl text-white text-xl mt-10">
         Live <span className="text-primary">Auctions</span>
       </div>) : (<Skeleton width={130} height={60} />)}
-      <Slider onSaleNFTs={randomSaleDomainIds} />
+      <Slider onSaleNFTs={randomSaleDomainItems} />
       <div>
         {
           animationEnd ? (

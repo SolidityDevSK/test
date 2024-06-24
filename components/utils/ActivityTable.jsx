@@ -113,7 +113,7 @@ const ActivityTable = ({ data, itemsPerPage }) => {
               </div>
               <div className="md:col-span-3 flex col-span-3">
                 <p className="mx-auto">
-                  {checkFromValue(item)}
+                {checkFromValue(item)}
                 </p>
               </div>
               <div className="md:col-span-3 flex col-span-3">
@@ -123,8 +123,8 @@ const ActivityTable = ({ data, itemsPerPage }) => {
               </div>
               <div className="md:col-span-2 col-span-3 flex">
                 <p className="mx-auto">
-                  {checkPayAmount(item) + " "}
-                  bPrivapp
+                  {item.Price + " "}
+                  bPriva
                 </p>
               </div>
               <div className="col-span-1 text-center md:flex hidden">
@@ -132,7 +132,7 @@ const ActivityTable = ({ data, itemsPerPage }) => {
                 <Link
                   className="mx-auto"
                   target="__blank"
-                  href={`https://sepolia.etherscan.io/tx/${item.transactionHash}`}
+                  href={`https://bscscan.com/tx/${item.transactionHash}`}
                 >
                   Tx
                 </Link>

@@ -16,7 +16,8 @@ import _ from "lodash";
 import { useWaitForTransaction } from "wagmi";
 
 
-const PaginatedTable = ({ data, onSalesNFTsId, itemsPerPage }) => {
+const PaginatedTable = ({ data, itemsPerPage }) => {
+
   const [currentPage, setCurrentPage] = useState(1);
   const [saleValue, setSaleValue] = useState({});
   const [imageUrls, setImageUrls] = useState({});
@@ -24,7 +25,9 @@ const PaginatedTable = ({ data, onSalesNFTsId, itemsPerPage }) => {
 
   const [statusTransactions, setStatusTransactions] = useState({});
 
-  const { isLoading, approvedDomainStatus, setApporvedDomainStatus, getAllTransactions } = useContext(TransactionContext)
+  const { isLoading, approvedDomainStatus, allSaleDetailDomains, setApporvedDomainStatus } = useContext(TransactionContext)
+
+  console.log(allSaleDetailDomains,"allSaleDetailDomains");
 
   const processTransactionStatus = (success, error, successMessage, errorMessage) => {
 
@@ -71,12 +74,6 @@ const PaginatedTable = ({ data, onSalesNFTsId, itemsPerPage }) => {
     })
 
 
-  useEffect(() => {
-    if (createdOfferError || canceledOfferError || isApproveError)
-      getAllTransactions()
-  }, [createdOfferError, canceledOfferError, isApproveError])
-
-
   processTransactionStatus(
     isApproveSuccess,
     isApproveError,
@@ -118,25 +115,27 @@ const PaginatedTable = ({ data, onSalesNFTsId, itemsPerPage }) => {
       functionName: "approve"
     })
 
-    setTimeout(() => {
-      setApporvedDomainStatus((prevStatus) => ({
-        ...prevStatus,
-        [id]: true
-      }))
-    }, 6000);
+    // setTimeout(() => {
+    //   setApporvedDomainStatus((prevStatus) => ({
+    //     ...prevStatus,
+    //     [id]: true
+    //   }))
+    // }, 6000);
   }
 
   const createOfferDomain = async (id) => {
     if (!saleValue[id]) return
-    console.log(saleValue[id])
+   let mintedId = id.toString()
+   let value = saleValue[id]
     toast.info(
       "Creating offer. Please wait while the offer is being processed."
     );
     setStatusTransactions({
-      [id]: "processing",
+      [mintedId]: "processing",
     });
-    createOfferWrite({
-      args: [id, saleValue[id]],
+    console.log(typeof mintedId, typeof saleValue[id], "datalarrr");
+    await createOfferWrite({
+      args: [mintedId, value],
       functionName: "createOffer",
     })
     setTimeout(() => {
@@ -152,11 +151,8 @@ const PaginatedTable = ({ data, onSalesNFTsId, itemsPerPage }) => {
     setStatusTransactions({
       [id]: "processing",
     });
-    cancelOfferWrite({ args: [id], functionName: "cancelOffer" })
-    setTimeout(() => {
-      _.remove(onSalesNFTsId, (item) => item == id);
-    }, 6000);
 
+   await cancelOfferWrite({ args: [id], functionName: "cancelOffer" })
   };
 
   return (
@@ -194,14 +190,14 @@ const PaginatedTable = ({ data, onSalesNFTsId, itemsPerPage }) => {
                   <div className="my-auto w-1/2">
                     <Image
                       className="lg:w-[250px md:w-[110px] w-[80px]"
-                      src={`https://gateway.pinata.cloud/ipfs/${item.ipfsHash}`}
+                      src={`https://gateway.pinata.cloud/ipfs/${item.IpfsHash}`}
                       alt="card-image"
                       width={130}
                       height={130}
                     />
                   </div>
                   <div className="py-4 text-center md:block hidden w-full my-auto font-light">
-                    <p className=" mr-2">Domain Name: <span>{item.domainName}.priva</span></p>
+                    <p className=" mr-2">Domain Name: <span>{item.DomainName}.priva</span></p>
                     <p className=" mr-2">Img Url:  <Link
                       href={
                         imageUrls[item.domainId]
@@ -219,7 +215,7 @@ const PaginatedTable = ({ data, onSalesNFTsId, itemsPerPage }) => {
                   </div>
                   <div className="my-auto w-1/2 h-full relative mx-auto z-10 bg-[#132027]">
                     <div className="flex md:text-xs text-[10px] md:w-[180px] w-[100px] mx-auto justify-between">
-                      {_.includes(onSalesNFTsId, item.tokenId) ? <p className="mx-auto text-primary animate-pulse">Token is on sale now</p> : (
+                      {_.some(allSaleDetailDomains,{ItemId: item.ItemId}) ? <p className="mx-auto text-primary animate-pulse">Token is on sale now</p> : (
                         <div>
                           <label className="my-auto mb-3 mr-3 w-full lg:text-md text-xs lg:font-light">
                             Selling Amount
@@ -251,9 +247,9 @@ const PaginatedTable = ({ data, onSalesNFTsId, itemsPerPage }) => {
                       <div className="py-4 md:text-xs text-[10px] mx-auto md:w-[220px] flex justify-around">
                         <button
                           onClick={() =>
-                            !approvedDomainStatus[item.tokenId] && approveDomain(item.tokenId)
+                            !item.Approval && approveDomain(item.tokenId)
                           }
-                          className={`${approvedDomainStatus[item.tokenId]
+                          className={`${item.Approval
                             ? "bg-[#cdcdcd96] border-none cursor-not-allowed text-gray-800"
                             : "bg-transparent"
                             } md:border border-[1px] rounded-lg md:px-4 px-2 py-1 md:py-2`}
@@ -262,7 +258,8 @@ const PaginatedTable = ({ data, onSalesNFTsId, itemsPerPage }) => {
                         </button>
                         <button
                           onClick={() =>
-                            approvedDomainStatus[item.tokenId] && !_.includes(onSalesNFTsId, item.tokenId) && createOfferDomain(item.tokenId, saleValue)
+                            // approvedDomainStatus[item.tokenId] && !_.includes(onSalesNFTsId, item.tokenId) &&
+                             createOfferDomain(item.tokenId, saleValue)
                           }
                           className={`${!approvedDomainStatus[item.tokenId] ? "bg-[#cdcdcd96] border-none cursor-not-allowed text-gray-800" : (_.includes(onSalesNFTsId, item.tokenId)
                             ? "bg-[#cdcdcd96] border-none cursor-not-allowed text-gray-800"
@@ -273,13 +270,13 @@ const PaginatedTable = ({ data, onSalesNFTsId, itemsPerPage }) => {
                         </button>
                         <button
                           onClick={() =>
-                            _.includes(onSalesNFTsId, item.tokenId) &&
-                            cancelOfferDomain(Number(item.tokenId))
+                            _.some(allSaleDetailDomains,{ItemId: item.ItemId}) &&
+                            cancelOfferDomain(item.ItemId)
                           }
-                          className={`${!_.includes(onSalesNFTsId, item.tokenId)
-                            ? "bg-[#cdcdcd96] border-none cursor-not-allowed text-gray-800"
-                            : "bg-transparent"
-                            } md:border border-[1px] rounded-lg md:px-4 px-2 py-1 md:py-2`}
+                           className={`${!_.some(allSaleDetailDomains,{ItemId: item.ItemId})
+                             ? "bg-[#cdcdcd96] border-none cursor-not-allowed text-gray-800"
+                             : "bg-transparent"
+                             } md:border border-[1px] rounded-lg md:px-4 px-2 py-1 md:py-2`}
                         >
                           Cancel
                         </button>

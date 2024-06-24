@@ -27,16 +27,12 @@ const  {openConnectModal} = useConnectModal()
     searchDomain,
     selectBGImage,
     setBgImage,
-    privBalance,
-    mintingCost,
-    setApproveStatus,
-    approveStatus,
-    mintableStatus,
     getAllData,
     setAllOwnNFT,
+    approvalTokenStatus,
+    mintingCost,
     getAllTransactions
   } = useContext(TransactionContext);
-
 
   const { address } = useAccount();
 
@@ -119,6 +115,7 @@ const  {openConnectModal} = useConnectModal()
 
 
   const mintDomainAndToast = async () => {
+    console.log(domainName);
     if (!address || !domainName) return
     try {
       mintWrite({
@@ -206,7 +203,7 @@ const  {openConnectModal} = useConnectModal()
           </div>
         </div>
         <div className="flex gap-10 mt-10 items-center justify-center">
-          {approveStatus ?
+          {approvalTokenStatus.DomainApprovalBalance > mintingCost ?
             <Button variant="destructive" className="cursor-not-allowed">
               Approved
             </Button> : <Button
@@ -215,7 +212,7 @@ const  {openConnectModal} = useConnectModal()
             >
              {isApproveLoading ? "Processing..." : "Approve" }
             </Button>}
-          <Button variant={!reMintable && !approveStatus ? "destructive" : ""}
+          <Button variant={!reMintable && !approvalTokenStatus.DomainApprovalBalance > mintingCost ? "destructive" : ""}
             className={mintIsSuccess && !reMintable ? "cursor-not-allowed" : (isMintedLoading ? "animate-pulse" : "")}
             onClick={() => !isMintedLoading && mintDomainAndToast()}>
             {isMintedLoading || mintIsLoading ? 'Mint is loading...!' : (isMintedSuccess && !reMintable ? 'Minted!' : 'Mint Domain')}
