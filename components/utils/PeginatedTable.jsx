@@ -188,6 +188,7 @@ const PaginatedTable = ({ data, itemsPerPage }) => {
               <div className="flex-col">
                 <div className="flex w-4/5 mx-auto">
                   <div className="my-auto w-1/2">
+                  <p className="block md:hidden">Domain Name: <span>{item.DomainName}.priva</span></p>
                     <Image
                       className="lg:w-[250px md:w-[110px] w-[80px]"
                       src={`https://gateway.pinata.cloud/ipfs/${item.IpfsHash}`}

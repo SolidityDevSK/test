@@ -30,8 +30,7 @@ const  {openConnectModal} = useConnectModal()
     getAllData,
     setAllOwnNFT,
     approvalTokenStatus,
-    mintingCost,
-    getAllTransactions
+    mintingCost
   } = useContext(TransactionContext);
 
   const { address } = useAccount();
@@ -68,7 +67,6 @@ const  {openConnectModal} = useConnectModal()
         setReMintable(false)
         setTimeout(() => {
           setReMintable(true)
-          getAllTransactions();
           getAllData();
   
         }, 5000)
@@ -78,11 +76,11 @@ const  {openConnectModal} = useConnectModal()
     },[isMintedSuccess])
 
 
-    useEffect(()=>{      
-      if(isApproveSuccess) {
-        setApproveStatus(true)
-      }
-    },[isApproveSuccess])
+    // useEffect(()=>{      
+    //   if(isApproveSuccess) {
+    //     setApproveStatus(true)
+    //   }
+    // },[isApproveSuccess])
 
 
 
@@ -203,7 +201,7 @@ const  {openConnectModal} = useConnectModal()
           </div>
         </div>
         <div className="flex gap-10 mt-10 items-center justify-center">
-          {approvalTokenStatus.DomainApprovalBalance > mintingCost ?
+          {approvalTokenStatus?.DomainApprovalBalance && approvalTokenStatus.DomainApprovalBalance > mintingCost ?
             <Button variant="destructive" className="cursor-not-allowed">
               Approved
             </Button> : <Button
@@ -212,7 +210,7 @@ const  {openConnectModal} = useConnectModal()
             >
              {isApproveLoading ? "Processing..." : "Approve" }
             </Button>}
-          <Button variant={!reMintable && !approvalTokenStatus.DomainApprovalBalance > mintingCost ? "destructive" : ""}
+          <Button variant={!reMintable&& approvalTokenStatus?.DomainApprovalBalance && !approvalTokenStatus?.DomainApprovalBalance > mintingCost ? "destructive" : ""}
             className={mintIsSuccess && !reMintable ? "cursor-not-allowed" : (isMintedLoading ? "animate-pulse" : "")}
             onClick={() => !isMintedLoading && mintDomainAndToast()}>
             {isMintedLoading || mintIsLoading ? 'Mint is loading...!' : (isMintedSuccess && !reMintable ? 'Minted!' : 'Mint Domain')}

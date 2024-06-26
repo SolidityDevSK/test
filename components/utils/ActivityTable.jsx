@@ -132,7 +132,7 @@ const ActivityTable = ({ data, itemsPerPage }) => {
                 <Link
                   className="mx-auto"
                   target="__blank"
-                  href={`https://bscscan.com/tx/${item.transactionHash}`}
+                  href={`https://bscscan.com/tx/${item.TxId}`}
                 >
                   Tx
                 </Link>

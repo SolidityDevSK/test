@@ -15,7 +15,7 @@ const {address } = useAccount()
 
   const {allOwnMarketEventData} = useContext(TransactionContext)
 
-  console.log(allOwnMarketEventData, "allowed");
+
   useEffect(() => {
     let sortedData = _.sortBy(allOwnMarketEventData, 'Timestamp').reverse();
     setMergedArray(sortedData);
